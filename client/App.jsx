@@ -1,13 +1,3 @@
-import React, { Component } from 'react';
+import React from 'react'
 
-class App extends Component {
-    render() {
-      return (
-        <div>
-         1231231234
-        </div>
-      );
-    }
-  }
-   
-export default App;
+export default () => <div>123123123</div>
