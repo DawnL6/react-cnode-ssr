@@ -39,7 +39,7 @@ serverCompiler.watch({}, (err, stats) => {
     serverBundel = m.exports.default
 })
 module.exports = function (app) {
-    
+
     app.use('/public', proxy({
         target: 'http://localhost:8888'
     }))
