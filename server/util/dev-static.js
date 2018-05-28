@@ -3,11 +3,9 @@ const webpack = require('webpack')
 const path = require('path')
 const proxy = require('http-proxy-middleware')
 const MemoryFs = require('memory-fs')
-const ejs = require('ejs')
-const serialize = require('serialize-javascript')
-const bootstrap = require('react-async-bootstrapper')
-const ReactDOMServer = require('react-dom/server')
 const serverConfig = require('../../build/webpack.config.server')
+
+const serverRender = require('./server-render')
 
 const getTempalte = () => {
   return new Promise((resolve, reject) => {
@@ -19,11 +17,25 @@ const getTempalte = () => {
   })
 }
 
-const Module = module.constructor
+
+const NativeModule = require('module')
+const vm = require('vm')
+
+const getModuleFromString = (bundle, filename) => {
+  const m = { exports: {} }
+  const wrapper = NativeModule.wrap(bundle)
+  const script = new vm.Script(wrapper, {
+    filename: filename,
+    displayErrors: true,
+  })
+  const result = script.runInThisContext()
+  result.call(m.exports, m.exports, require, m)
+  return m
+}
 
 const mfs = new MemoryFs
 const serverCompiler = webpack(serverConfig)
-let serverBundel, createStoreMap
+let serverBundel
 serverCompiler.outputFileSystem = mfs
 serverCompiler.watch({}, (err, stats) => {
   if (err) throw err
@@ -37,44 +49,21 @@ serverCompiler.watch({}, (err, stats) => {
   )
 
   const bundle = mfs.readFileSync(bundlePath, 'utf-8')
-  const m = new Module()
-  m._compile(bundle, 'server-entry.js')
-  serverBundel = m.exports.default
-  createStoreMap = m.exports.createStoreMap
+  const m = getModuleFromString(bundle, 'server_entry.js')
+  serverBundel = m.exports
 })
-module.exports = function (app) {
 
+module.exports = function (app) {
   app.use('/public', proxy({
     target: 'http://localhost:8888'
   }))
 
-  const getStoreState = (stores) => {
-    return Object.keys(stores).reduce((result, storeName) => {
-      result[storeName] = stores[storeName].toJson()
-      return result
-    }, {})
-  }
-
-  app.get('*', function (req, res) {
+  app.get('*', function (req, res, next) {
+    if (!serverBundle) {
+      return res.send('waiting for compile, refresh later')
+    }
     getTempalte().then(template => {
-      const routerContext = {}
-      const stores = createStoreMap()
-      const app = serverBundel(stores, routerContext, req.url)
-      bootstrap(app).then(() => {
-        if (routerContext.url) {
-          res.status(302).setHeader('Location', routerContext.url)
-          res.end()
-          return
-        }
-        const state = getStoreState(stores)
-        const content = ReactDOMServer.renderToString(app)
-        const html = ejs.render(template, {
-          appString: content,
-          initialState: serialize(state)
-        })
-        res.send(html)
-      })
-
-    })
+      return serverRender(serverBundel, template, req, res)
+    }).catch(next)
   })
 }
