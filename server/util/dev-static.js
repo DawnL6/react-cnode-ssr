@@ -17,7 +17,6 @@ const getTempalte = () => {
   })
 }
 
-
 const NativeModule = require('module')
 const vm = require('vm')
 
@@ -59,7 +58,7 @@ module.exports = function (app) {
   }))
 
   app.get('*', function (req, res, next) {
-    if (!serverBundle) {
+    if (!serverBundel) {
       return res.send('waiting for compile, refresh later')
     }
     getTempalte().then(template => {
