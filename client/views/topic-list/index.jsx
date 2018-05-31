@@ -5,15 +5,51 @@ import {
 } from 'mobx-react'
 import PropTypes from 'prop-types'
 import Helmet from 'react-helmet'
-import Button from 'material-ui/Button'
 
-import { AppState } from '../../store/app-state'
+import Tabs, { Tab } from 'material-ui/Tabs'
+import List from 'material-ui/List/List'
+import { CircularProgress } from 'material-ui/Progress'
+import qs from 'query-string'
+// import Button from 'material-ui/Button'
 
+import { AppState, TopicStore } from '../../store/store'
+import Container from '../../views/layout/container'
+import TopicListItem from './list-item'
+import { tabs } from '../../util/variable-define'
 
-@inject('appState') @observer
-export default class TopicList extends React.Component {
+@inject((stores) => {
+  return {
+    appState: stores.appState,
+    topicStore: stores.topicStore,
+  }
+}) @observer
+class TopicList extends React.Component {
+  static contextTypes = {
+    router: PropTypes.object,
+  }
+
+  constructor() {
+    super()
+    this.state = {
+      tabIndex: 0,
+    }
+  }
+
   componentDidMount() {
-    // do something here
+    const tab = this.getTab()
+    this.props.topicStore.fetchTopics(tab)
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.location.search !== this.props.location.search) {
+      this.props.topicStore.fetchTopics(this.getTab(nextProps.location.search))
+    }
+  }
+
+  getTab(search) {
+    search = search || this.props.location.search
+    const query = qs.parse(search)
+    return query.tab || 'all'
   }
 
   bootstrap() {
@@ -25,22 +61,67 @@ export default class TopicList extends React.Component {
     })
   }
 
+  changeTab = (e, value) => {
+    this.context.router.history.push({
+      pathname: '/index',
+      search: `?tab=${value}`,
+    })
+  }
+
+  tttt = () => {
+    alert('123')
+  }
+
   render() {
+    const { topicStore } = this.props
+    const topicList = topicStore.topics
+    const syncingTopics = topicStore.syncing
+    const tab = this.getTab()
     return (
-      <div>
+      <Container>
         <Helmet>
           <title>This is topic list</title>
           <meta name="description" content="This is description" />
         </Helmet>
-        <Button variant="raised" color="primary">button</Button>
-        <span>
-          {this.props.appState.msg}
-        </span>
-      </div>
+        <Tabs value={tab} onChange={this.changeTab}>
+          {
+            Object.keys(tabs).map(t => <Tab key={t} label={tabs[t]} value={t} />)
+          }
+        </Tabs>
+        <List>
+          {
+            topicList.map((topic) => {
+              return <TopicListItem onClick={this.tttt} topic={topic} key={topic.id} />
+            })
+          }
+          {
+            syncingTopics ?
+              (
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-around',
+                    padding: '40px 0',
+                  }}
+                >
+                  <CircularProgress color="primary" size={100} />
+                </div>
+              ) :
+              null
+          }
+        </List>
+      </Container>
     )
   }
 }
 
-TopicList.propTypes = {
+TopicList.wrappedComponent.propTypes = {
   appState: PropTypes.instanceOf(AppState),
+  topicStore: PropTypes.instanceOf(TopicStore),
 }
+
+TopicList.propTypes = {
+  location: PropTypes.object.isRequired,
+}
+
+export default TopicList

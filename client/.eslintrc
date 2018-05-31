@@ -17,6 +17,8 @@
     "react/require-default-props": [0],
     "arrow-body-style": [0],
     "no-param-reassign": [0],
-    "no-console-log/no-console-log": [0]
+    "react/forbid-prop-types": [0],
+    "react/prop-types": [0],
+    "no-alert": [0]
   }
 }
