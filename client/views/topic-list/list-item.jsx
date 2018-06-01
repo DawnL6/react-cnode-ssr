@@ -7,6 +7,7 @@ import ListItem from 'material-ui/List/ListItem'
 import ListItemAvatar from 'material-ui/List/ListItemAvatar'
 import ListItemText from 'material-ui/List/ListItemText'
 import Avatar from 'material-ui/Avatar'
+import formatDate from '../../util/date-format'
 
 import { tabs } from '../../util/variable-define'
 import {
@@ -38,7 +39,7 @@ const Secondary = ({ classes, topic }) => {
         <span>/</span>
         <span>{topic.reply_count}</span>
       </span>
-      <span>创建时间：{topic.create_time}</span>
+      <span>创建时间：{formatDate(topic.create_at, 'yyyy-mm-dd')}</span>
     </span>
   )
 }

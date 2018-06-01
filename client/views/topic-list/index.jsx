@@ -12,10 +12,10 @@ import { CircularProgress } from 'material-ui/Progress'
 import qs from 'query-string'
 // import Button from 'material-ui/Button'
 
-import { AppState, TopicStore } from '../../store/store'
 import Container from '../../views/layout/container'
 import TopicListItem from './list-item'
 import { tabs } from '../../util/variable-define'
+
 
 @inject((stores) => {
   return {
@@ -53,11 +53,9 @@ class TopicList extends React.Component {
   }
 
   bootstrap() {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        this.props.appState.count = 3
-        resolve(true)
-      })
+    const tab = this.getTab()
+    return this.props.topicStore.fetchTopics(tab).then(() => {
+      return true
     })
   }
 
@@ -68,8 +66,8 @@ class TopicList extends React.Component {
     })
   }
 
-  tttt = () => {
-    alert('123')
+  goDetail = (id) => {
+    this.context.router.history.push(`/detail/${id}`)
   }
 
   render() {
@@ -91,7 +89,13 @@ class TopicList extends React.Component {
         <List>
           {
             topicList.map((topic) => {
-              return <TopicListItem onClick={this.tttt} topic={topic} key={topic.id} />
+              return (
+                <TopicListItem
+                  onClick={() => this.goDetail(topic.id)}
+                  topic={topic}
+                  key={topic.id}
+                />
+              )
             })
           }
           {
@@ -116,8 +120,7 @@ class TopicList extends React.Component {
 }
 
 TopicList.wrappedComponent.propTypes = {
-  appState: PropTypes.instanceOf(AppState),
-  topicStore: PropTypes.instanceOf(TopicStore),
+  topicStore: PropTypes.object.isRequired,
 }
 
 TopicList.propTypes = {

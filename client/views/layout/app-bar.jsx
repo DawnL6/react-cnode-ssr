@@ -1,5 +1,10 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import {
+  inject,
+  observer,
+} from 'mobx-react'
+
 import { withStyles } from 'material-ui/styles'
 import AppBar from 'material-ui/AppBar'
 import Toolbar from 'material-ui/Toolbar'
@@ -17,16 +22,31 @@ const styleSheet = {
   },
 }
 
+@inject((stores) => {
+  return {
+    user: stores.appState.user,
+  }
+}) @observer
+
 class MainAppBar extends React.Component {
+  static contextTypes = {
+    router: PropTypes.object,
+  }
+
   componentDidMount() {
     // do something here
   }
-  handelClick = () => {
-    alert('123') // eslint-disable-line
+  loginButtonClick = () => {
+    if (this.props.appState.user.isLogin) {
+      this.context.router.history.push('/user/info')
+    } else {
+      this.context.router.history.push('/user/login')
+    }
   }
 
   render() {
-    const classes = this.props.classes
+    const { classes, user } = this.props
+    console.log(user)
     return (
       <div className={classes.root}>
         <AppBar position="fixed">
@@ -40,8 +60,8 @@ class MainAppBar extends React.Component {
             <Button variant="raised">
               新建话题
             </Button>
-            <Button color="default">
-              登录
+            <Button color="default" onClick={this.loginButtonClick}>
+              {user.isLogin ? user.info.loginname : '登录'}
             </Button>
           </Toolbar>
         </AppBar>
