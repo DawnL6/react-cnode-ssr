@@ -37,31 +37,34 @@ class MainAppBar extends React.Component {
     // do something here
   }
   loginButtonClick = () => {
-    if (this.props.appState.user.isLogin) {
-      this.context.router.history.push('/user/info')
+    if (this.props.user.isLogin) {
+      this.context.router.history.push('/info')
     } else {
-      this.context.router.history.push('/user/login')
+      this.context.router.history.push({
+        pathname: '/login',
+        search: `?from=${location.pathname}`,
+      })
     }
+  }
+
+  goIndex = () => {
+    this.context.router.history.push('/index')
   }
 
   render() {
     const { classes, user } = this.props
-    console.log(user)
     return (
       <div className={classes.root}>
         <AppBar position="fixed">
           <Toolbar>
-            <IconButton color="default" aria-label="Menu" onClick={this.handelClick}>
+            <IconButton color="default" aria-label="Menu" onClick={this.goIndex}>
               <HomeIcon />
             </IconButton>
             <Typography type="title" color="inherit" className={classes.flex}>
               JNode
             </Typography>
-            <Button variant="raised">
-              新建话题
-            </Button>
             <Button color="default" onClick={this.loginButtonClick}>
-              {user.isLogin ? user.info.loginname : '登录'}
+              <span>{user.isLogin ? user.info.loginName : '登录'}</span>
             </Button>
           </Toolbar>
         </AppBar>

@@ -82,7 +82,6 @@ class TopicStore {
 
   @action getTopicDetail(id) {
     return new Promise((resolve, reject) => {
-      console.log(this.detailMap[id])
       if (this.detailMap[id]) {
         resolve(this.detailMap[id])
       } else {

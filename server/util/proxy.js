@@ -28,7 +28,6 @@ module.exports = function (req, res, next) {
       'Content-Type': 'application/x-www-form-urlencoded'
     }
   }).then(resp => {
-    console.log('123')
     if (resp.status === 200) {
       res.send(resp.data)
     } else {

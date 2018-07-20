@@ -5,6 +5,9 @@ import {
   observer,
 } from 'mobx-react'
 
+import {
+  Redirect,
+} from 'react-router-dom'
 import queryString from 'query-string'
 
 import TextField from 'material-ui/TextField'
@@ -29,21 +32,21 @@ class UserLogin extends React.Component {
   constructor() {
     super()
     this.state = {
-      accesstoken: '',
+      accesstoken: '0f70d421-7163-4338-8dd6-aca2fac6ddbd',
       helpText: '',
     }
   }
 
   componentDidMount() {
     if (this.props.user.isLogin) {
-      this.context.router.history.replace('user/info')
+      this.context.router.history.replace('/info')
     }
   }
 
-  getFrom(location) {
+  getFrom = (location) => {
     location = location || this.props.location
     const query = queryString.parse(location.search)
-    return query.from || '/user/info'
+    return query.from || '/info'
   }
 
   handleLogin = () => {
@@ -57,9 +60,6 @@ class UserLogin extends React.Component {
       helpText: '',
     })
     return this.props.appState.login(this.state.accesstoken)
-      .then(() => {
-        this.context.router.history.replace('user/info')
-      })
       .catch((msg) => {
         console.log(msg)
       })
@@ -73,6 +73,14 @@ class UserLogin extends React.Component {
 
   render() {
     const { classes } = this.props
+    const isLogin = this.props.user.isLogin
+    const from = this.getFrom()
+
+    if (isLogin) {
+      return (
+        <Redirect to={from} />
+      )
+    }
     return (
       <UserWrapper>
         <div className={classes.root}>
@@ -106,6 +114,7 @@ UserLogin.wrappedComponent.propTypes = {
 
 UserLogin.propTypes = {
   classes: PropTypes.object.isRequired,
+  location: PropTypes.object.isRequired,
 }
 
 export default withStyles(loginStyles)(UserLogin)

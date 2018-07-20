@@ -33,6 +33,11 @@ export const topicDetailStyle = (theme) => {
       margin: '0 24px',
       marginBottom: 24,
     },
+    content: {
+      width: '100%',
+      minHeight: '80px',
+      padding: '10px',
+    },
     notLoginButton: {
       textAlign: 'center',
       padding: '20px 0',
